@@ -1,6 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 
-const APP_VERSION = 3;
+const APP_VERSION = 4;
 const todayKey = new Date().toISOString().slice(0, 10);
 const SETTINGS_KEY = "breaking-app-settings";
 
@@ -47,7 +47,7 @@ const plans = [
   { title: "周二｜课程输出日", modules: ["courseOutput"] },
   { title: "周三｜Freestyle主训练日", modules: ["warmupGroove", "toprock", "freestyleMain", "freezeFlow", "cooldown"] },
   { title: "周四｜灵活训练日", modules: ["flexDay"] },
-  { title: "周五｜Swipe专项日", modules: ["swipeWarmup", "supportCare", "singleSupport", "swipeSkill", "swipeConnect", "shortStretch"] },
+  { title: "周五｜Swipe专项日", modules: ["core", "swipeStructure", "swipeConnect", "shortStretch"] },
   { title: "周六｜舞蹈整合日", modules: ["warmupGroove", "roundTraining", "problemFix", "creative", "shortCooldown"] }
 ];
 
@@ -176,31 +176,21 @@ const defs = {
     note: "肩、手腕、髋优先。",
     checks: ["肩", "手腕", "髋", "身体热起来"]
   },
-  supportCare: {
-    title: "支撑维护",
-    time: "15 分钟",
-    note: "维持 Swipe 需要的结构。",
+  swipeStructure: {
+    title: "Swipe结构专项",
+    time: "55 分钟",
+    note: "单侧支撑 + Swipe 结构。重点：落地结构、单侧支撑、高度、发力位。",
     steps: [
-      ["Hollow Hold", 30, "30s × 2", "收肋骨，腰背稳定，不塌。", 2, "time"],
-      ["Side Plank", 30, "30s × 2 / 侧", "肩顶住，髋别掉。", 4, "time"],
-      ["墙静蹲", 45, "45s × 2", "膝盖对脚尖，脚掌稳定。", 2, "time"]
+      ["单手支撑", 45, "45s × 2", "髋保持高度，肩主动推地，支撑侧不要塌。", 2, "time"],
+      ["重心转换", 0, "25 次 × 2", "重心从一侧稳定转到另一侧，髋不要掉。", 2, "count"],
+      ["单腿起跳", 0, "25 次 × 2", "起跳先稳支撑，再找高度。落地别散。", 2, "count"],
+      ["二步扫腿训练", 0, "10 次 × 5", "两步节奏清楚，扫腿轨迹干净，身体别断。", 5, "count"],
+      ["单圈 Swipe", 0, "5 次 × 5", "落地直接进入下一次发力位，不二次调整。", 5, "count"]
     ]
-  },
-  singleSupport: {
-    title: "单侧支撑",
-    time: "15 分钟",
-    note: "当前 Swipe 最大弱点：减少掉胯。",
-    checks: ["单手支撑", "髋保持高度", "重心转移", "支撑侧稳定", "掉胯减少"]
-  },
-  swipeSkill: {
-    title: "Swipe专项",
-    time: "35 分钟",
-    note: "目标是建立结构，不是追求连续 Swipe。",
-    checks: ["半圈 Swipe", "Swipe 落地停顿", "Swipe Entry", "Swipe Landing", "落地直接进发力位", "不二次调整"]
   },
   swipeConnect: {
     title: "连接训练",
-    time: "10 分钟",
+    time: "20 分钟",
     note: "Swipe 进入舞蹈连接。",
     checks: ["Swipe → Freeze", "Swipe → Footwork", "Swipe → 停顿"]
   },
