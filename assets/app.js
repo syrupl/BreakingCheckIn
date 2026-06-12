@@ -1,6 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 
-const APP_VERSION = 4;
+const APP_VERSION = 5;
 const todayKey = new Date().toISOString().slice(0, 10);
 const SETTINGS_KEY = "breaking-app-settings";
 
@@ -462,6 +462,11 @@ function currentStep() {
   return mod.steps[Math.min(mod.index, mod.steps.length - 1)];
 }
 
+function hasNextStep() {
+  const mod = ensure(state.current);
+  return mod.index + 1 < mod.steps.length;
+}
+
 function openModule(id) {
   state.current = id;
   ensure(id);
@@ -551,6 +556,7 @@ function toggleTimer() {
 function autoStartCurrent() {
   setTimeout(() => {
     if (!state.current || timer) return;
+    if (state.current !== "core") return;
     const mod = ensure(state.current);
     if (mod.index >= mod.steps.length || mod.remaining <= 0) return;
     if (currentStep().kind === "count") return;
@@ -565,11 +571,15 @@ function tick(token) {
   $("#clock").textContent = fmt(Math.max(0, mod.remaining));
   if (mod.remaining > 0) return;
   stopTimer();
-  if (state.current === "core" && mod.phase === "work") {
+  if (mod.phase === "work") {
     finishWork("done", true);
-    startRest();
-  } else if (state.current === "core" && mod.phase === "rest") {
-    nextCoreStep();
+    if (hasNextStep()) startRest();
+    else {
+      mod.index += 1;
+      showStep();
+    }
+  } else if (mod.phase === "rest") {
+    nextStepAfterRest();
   } else {
     finishWork("done", true);
     mod.index += 1;
@@ -586,7 +596,7 @@ function stopTimer() {
 }
 
 function startRest(extra = 0) {
-  const mod = ensure("core");
+  const mod = ensure(state.current);
   resetCard();
   mod.phase = "rest";
   mod.remaining = effectiveSeconds(20, "rest") + extra;
@@ -604,14 +614,14 @@ function startRest(extra = 0) {
   timer = setInterval(() => tick(token), 1000);
 }
 
-function nextCoreStep() {
-  const mod = ensure("core");
+function nextStepAfterRest() {
+  const mod = ensure(state.current);
   resetCard();
   $("#train").classList.remove("resting");
   mod.index += 1;
   stopTimer();
   showStep();
-  autoStartCurrent();
+  if (state.current === "core") autoStartCurrent();
   save();
 }
 
@@ -631,20 +641,27 @@ function finishWork(result, fullTime) {
 function recordSwipe(result) {
   const mod = ensure(state.current);
   if (mod.index >= mod.steps.length) return;
+  if (mod.phase === "rest") {
+    if (result === "miss") nextStepAfterRest();
+    return;
+  }
   if (state.current === "core") {
-    if (mod.phase === "rest") {
-      if (result === "miss") nextCoreStep();
-      return;
-    }
     const fullTime = mod.remaining <= 0;
     finishWork("done", fullTime);
-    startRest();
+    if (hasNextStep()) startRest();
+    else {
+      mod.index += 1;
+      showStep();
+    }
     return;
   }
   const step = currentStep();
   finishWork(result, step.kind === "count" ? true : mod.remaining <= 0);
-  mod.index += 1;
-  showStep();
+  if (hasNextStep()) startRest();
+  else {
+    mod.index += 1;
+    showStep();
+  }
   save();
 }
 
@@ -665,7 +682,7 @@ function drag(dx) {
 function settlePreview(direction) {
   const id = state.current;
   const mod = id ? ensure(id) : null;
-  if (id === "core" && mod.phase === "rest" && direction !== "left") {
+  if (mod && mod.phase === "rest" && direction !== "left") {
     pending = null;
     cardAnchor = "center";
     $("#train").classList.remove("peek-left", "peek-right");
@@ -673,7 +690,7 @@ function settlePreview(direction) {
     $("#tip").textContent = "";
     return;
   }
-  if (id === "core" && mod.phase === "rest" && direction === "left") {
+  if (mod && mod.phase === "rest" && direction === "left") {
     const result = "miss";
     if (pending !== result) {
       pending = result;
