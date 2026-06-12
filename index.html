@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Breaking 训练卡片</title>
+  <link rel="stylesheet" href="assets/app.css?v=20260612-1800">
+</head>
+<body>
+  <main class="home" id="home">
+    <div class="top-row">
+      <div>
+        <div class="date" id="dateLine"></div>
+        <h1 id="dayTitle"></h1>
+      </div>
+      <div class="top-actions">
+        <button class="calendar-btn" id="settingsBtn" aria-label="数据设置">⚙</button>
+        <button class="calendar-btn" id="calendarBtn" aria-label="查看日历">📅</button>
+      </div>
+    </div>
+    <section class="summary">
+      <div class="label" id="summaryLabel">完成项目</div>
+      <div class="big" id="summaryValue">0/0</div>
+    </section>
+    <section class="module-list" id="moduleList"></section>
+    <section class="notes">
+      <div class="label">今日备注</div>
+      <textarea id="notes" placeholder="只写一个最该复盘的问题。"></textarea>
+    </section>
+  </main>
+
+  <section class="calendar" id="calendar">
+    <div class="calendar-panel">
+      <div class="calendar-head">
+        <div class="calendar-title" id="calendarTitle"></div>
+        <button class="calendar-btn" id="closeCalendar" aria-label="关闭日历">×</button>
+      </div>
+      <div class="calendar-grid" id="calendarGrid"></div>
+      <div class="day-detail" id="dayDetail"></div>
+    </div>
+  </section>
+
+  <section class="settings" id="settings">
+    <div class="settings-panel">
+      <div class="calendar-head">
+        <div class="calendar-title">数据 / 模式</div>
+        <button class="calendar-btn" id="closeSettings" aria-label="关闭设置">×</button>
+      </div>
+      <div class="mode-toggle">
+        <button id="formalMode">正式执行</button>
+        <button id="testMode">测试模式</button>
+      </div>
+      <div class="setting-card">
+        <div class="name-line">当前模式</div>
+        <div class="meta-line" id="modeText">正式执行</div>
+      </div>
+      <div class="setting-card">
+        <div class="name-line">今日数据</div>
+        <textarea id="dataEditor" spellcheck="false"></textarea>
+      </div>
+      <div class="settings-actions">
+        <button id="reloadData">重新读取</button>
+        <button id="applyData">应用数据</button>
+        <button id="clearData">清空今日</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="train" id="train">
+    <button class="back" id="backBtn" aria-label="返回">‹</button>
+    <div class="side-face left">☹️</div>
+    <div class="side-face right">😊</div>
+    <div class="center-face" id="centerFace">😊</div>
+    <article class="card" id="card">
+      <div class="card-head">
+        <div class="step" id="stepLabel"></div>
+        <div class="name" id="stepName"></div>
+      </div>
+      <div class="main">
+        <div class="clock" id="clock">00:00</div>
+        <div class="state" id="stateText">点击开始</div>
+      </div>
+      <div>
+        <div class="tip" id="tip"></div>
+        <button class="rest-more" id="restMore">+10s</button>
+      </div>
+    </article>
+  </section>
+
+  <script src="assets/app.js?v=20260612-1800"></script>
+</body>
+</html>

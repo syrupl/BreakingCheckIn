@@ -1,0 +1,7 @@
+{
+  "name": "breaking-training-cards",
+  "private": true,
+  "scripts": {
+    "serve": "node server.js"
+  }
+}
