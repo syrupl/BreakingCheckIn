@@ -1,6 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 
-const APP_VERSION = 2;
+const APP_VERSION = 3;
 const todayKey = new Date().toISOString().slice(0, 10);
 const SETTINGS_KEY = "breaking-app-settings";
 
@@ -30,6 +30,7 @@ const storage = {
     if (!raw) return null;
     try {
       const data = JSON.parse(raw);
+      if (data.version !== APP_VERSION) return { ...defaultState(), notes: data.notes || "" };
       return { ...defaultState(), ...data, version: data.version || 1 };
     } catch {
       return null;
@@ -41,13 +42,13 @@ const storage = {
 };
 
 const plans = [
-  { title: "周日｜恢复", modules: ["dance"] },
-  { title: "周一｜身体结构 & 控制", modules: ["knee", "core", "handstand", "dance"] },
-  { title: "周二｜课堂输入转化", modules: ["dance"] },
-  { title: "周三｜Freestyle 核心", modules: ["core", "dance"] },
-  { title: "周四｜恢复 / 轻技术", modules: ["dance"] },
-  { title: "周五｜控制 + Swipe", modules: ["knee", "core", "dance"] },
-  { title: "周六｜舞蹈整合", modules: ["core", "dance"] }
+  { title: "周日｜恢复日", restDay: true, modules: ["recovery"] },
+  { title: "周一｜结构控制日", modules: ["warmupBasic", "knee", "core", "freeze", "handstand", "stretch"] },
+  { title: "周二｜课程输出日", modules: ["courseOutput"] },
+  { title: "周三｜Freestyle主训练日", modules: ["warmupGroove", "toprock", "freestyleMain", "freezeFlow", "cooldown"] },
+  { title: "周四｜灵活训练日", modules: ["flexDay"] },
+  { title: "周五｜Swipe专项日", modules: ["swipeWarmup", "supportCare", "singleSupport", "swipeSkill", "swipeConnect", "shortStretch"] },
+  { title: "周六｜舞蹈整合日", modules: ["warmupGroove", "roundTraining", "problemFix", "creative", "shortCooldown"] }
 ];
 
 const corePools = [
@@ -84,23 +85,36 @@ const corePools = [
 ];
 
 const defs = {
+  warmupBasic: {
+    title: "热身",
+    time: "10 分钟",
+    note: "Groove、Toprock、关节活动，先激活身体。",
+    checks: ["Groove", "Toprock", "关节活动", "身体热起来"]
+  },
+  warmupGroove: {
+    title: "热身",
+    time: "10 分钟",
+    note: "Groove + Toprock，节奏先在线。",
+    checks: ["Groove", "Toprock", "身体松开"]
+  },
   knee: {
     title: "膝盖训练",
     time: "约 10 分钟",
-    note: "慢、稳、膝盖对脚尖。",
+    note: "维持膝关节稳定。疼痛不是训练目标。",
     steps: [
-      ["靠墙单侧离心", 0, "12 × 2 / 侧", "慢慢下降。脚掌贴地，膝盖不内扣，身体别用腰顶。", 4, "count"],
-      ["单侧弓步踮脚维持", 45, "45s × 2 / 侧", "脚掌稳，骨盆正。重心向下，不向前压膝盖。", 4, "time"]
+      ["墙静蹲", 45, "45s × 2", "背贴墙，膝盖对脚尖，脚掌稳定。酸可以，刺痛停止。", 2, "time"],
+      ["离心深蹲", 0, "8 次 × 2", "下蹲 4 秒。慢、稳、膝盖不内扣，起身不抢。", 2, "count"]
     ]
   },
   handstand: {
-    title: "倒立专项",
+    title: "倒立结构",
     time: "约 15 分钟",
-    note: "推地、肩上提、收肋骨。",
+    note: "开肩、肩上提、Hollow 结构，避免香蕉倒立。",
     steps: [
-      ["胸贴墙倒立", 45, "30-45s × 3", "手推地，肩上提。臀腿收紧，不塌腰。", 3, "time"],
-      ["倒立肩上提", 0, "10-15 × 3", "手臂伸直，用肩胛把身体顶高，不耸脖子。", 3, "count"],
-      ["踢倒立停 1 秒", 60, "自由练", "踢上去先找停住。手指抓地，腿别散。", 3, "time"]
+      ["墙倒立", 45, "30-45s × 2", "手推地，肩上提，收肋骨，腿向上延伸。", 2, "time"],
+      ["胸贴墙倒立", 45, "30-45s × 2", "胸贴墙找直线，臀腿收紧，不塌腰。", 2, "time"],
+      ["肩胛上推", 0, "10-15 × 3", "手臂伸直，用肩胛把身体顶高，不耸脖子。", 3, "count"],
+      ["靠墙找直线", 45, "45s × 2", "肩、肋骨、骨盆、脚尖排成一条线。", 2, "time"]
     ]
   },
   core: {
@@ -108,11 +122,123 @@ const defs = {
     time: "30 分钟",
     note: "6 动作 × 4 组。右滑推进，时间不足会补组。"
   },
-  dance: {
-    title: "舞蹈勾选",
-    time: "按当天",
-    note: "不计组，做到了就勾。",
-    checks: ["Toprock", "Footwork", "Freeze", "Swipe / 课堂动作", "Freestyle 连续", "完整 round / 录制复盘"]
+  freeze: {
+    title: "Freeze训练",
+    time: "25 分钟",
+    note: "重点不是撑很久，而是进得去、停得住、出得来。",
+    checks: ["Baby Freeze", "Turtle Freeze", "Shoulder Freeze", "Three Point Freeze", "Entry", "Exit", "腿型变化"]
+  },
+  stretch: {
+    title: "拉伸",
+    time: "10 分钟",
+    note: "肩、胸椎、髋。",
+    checks: ["肩", "胸椎", "髋"]
+  },
+  courseOutput: {
+    title: "课程输出",
+    time: "课堂 + 围圈",
+    note: "把课堂输入变成自己的动作，只记重点，不贪多。",
+    checks: ["记录今天学到的重点", "Toprock 开场", "课堂内容出现", "Freeze 出现", "完成围圈输出", "可选 Swipe 尝试"]
+  },
+  toprock: {
+    title: "Toprock专项",
+    time: "15 分钟",
+    note: "节奏、Groove、停顿。",
+    checks: ["节奏", "Groove", "停顿", "方向变化"]
+  },
+  freestyleMain: {
+    title: "Freestyle训练",
+    time: "40 分钟",
+    note: "当前第一优先级：提高动作调用速度和连接能力。",
+    checks: ["只跳 Toprock", "Footwork 主导", "必须 Freeze", "完全自由", "循环完成", "卡顿后继续接"]
+  },
+  freezeFlow: {
+    title: "Freeze融入",
+    time: "15 分钟",
+    note: "Freeze 是转场，不是摆造型。",
+    checks: ["Footwork → Freeze", "Freeze → Footwork", "进入干净", "退出干净"]
+  },
+  cooldown: {
+    title: "放松",
+    time: "10 分钟",
+    note: "降低兴奋度，恢复呼吸。",
+    checks: ["呼吸恢复", "腿部放松", "肩背放松"]
+  },
+  flexDay: {
+    title: "灵活训练",
+    time: "30-45 分钟",
+    note: "根据身体状态选择恢复或轻技术，不追强度。",
+    checks: ["方案 A：恢复", "拉伸 / 活动度", "Groove", "方案 B：轻技术", "Footwork", "Freeze 进出", "轻量 Swipe"]
+  },
+  swipeWarmup: {
+    title: "Swipe热身",
+    time: "10 分钟",
+    note: "肩、手腕、髋优先。",
+    checks: ["肩", "手腕", "髋", "身体热起来"]
+  },
+  supportCare: {
+    title: "支撑维护",
+    time: "15 分钟",
+    note: "维持 Swipe 需要的结构。",
+    steps: [
+      ["Hollow Hold", 30, "30s × 2", "收肋骨，腰背稳定，不塌。", 2, "time"],
+      ["Side Plank", 30, "30s × 2 / 侧", "肩顶住，髋别掉。", 4, "time"],
+      ["墙静蹲", 45, "45s × 2", "膝盖对脚尖，脚掌稳定。", 2, "time"]
+    ]
+  },
+  singleSupport: {
+    title: "单侧支撑",
+    time: "15 分钟",
+    note: "当前 Swipe 最大弱点：减少掉胯。",
+    checks: ["单手支撑", "髋保持高度", "重心转移", "支撑侧稳定", "掉胯减少"]
+  },
+  swipeSkill: {
+    title: "Swipe专项",
+    time: "35 分钟",
+    note: "目标是建立结构，不是追求连续 Swipe。",
+    checks: ["半圈 Swipe", "Swipe 落地停顿", "Swipe Entry", "Swipe Landing", "落地直接进发力位", "不二次调整"]
+  },
+  swipeConnect: {
+    title: "连接训练",
+    time: "10 分钟",
+    note: "Swipe 进入舞蹈连接。",
+    checks: ["Swipe → Freeze", "Swipe → Footwork", "Swipe → 停顿"]
+  },
+  shortStretch: {
+    title: "拉伸",
+    time: "5 分钟",
+    note: "肩、髋、手腕放松。",
+    checks: ["肩", "髋", "手腕"]
+  },
+  roundTraining: {
+    title: "Round训练",
+    time: "50 分钟",
+    note: "6-8 轮。完整优先，不追难度。",
+    checks: ["6-8 轮", "Toprock", "Footwork", "Freeze", "可选 Swipe", "每轮完整"]
+  },
+  problemFix: {
+    title: "问题修正",
+    time: "15 分钟",
+    note: "每次只修一个问题。",
+    checks: ["选择一个问题", "Freeze", "Swipe", "Footwork", "记录下次继续修什么"]
+  },
+  creative: {
+    title: "创作时间",
+    time: "10 分钟",
+    note: "增加个人风格。",
+    checks: ["新入口", "新转场", "新组合"]
+  },
+  shortCooldown: {
+    title: "放松",
+    time: "5 分钟",
+    note: "收尾恢复。",
+    checks: ["呼吸恢复", "简单拉伸"]
+  },
+  recovery: {
+    title: "恢复日",
+    time: "自由",
+    note: "不安排高强度训练，恢复身体和灵感。",
+    checks: ["拉伸", "散步", "听音乐", "看 Battle", "看教学"]
   }
 };
 
@@ -202,7 +328,7 @@ function ensure(id) {
 function moduleCompleteIn(record, id) {
   const mod = record.modules && record.modules[id];
   if (!mod) return false;
-  if (id === "dance") return Object.values(mod.checks || {}).some(Boolean);
+  if (defs[id].checks) return Object.values(mod.checks || {}).some(Boolean);
   return mod.index >= mod.steps.length;
 }
 
@@ -217,7 +343,7 @@ function isRecordDone(record, date) {
 function dayStatus(date) {
   const record = storage.load(date);
   if (record) return isRecordDone(record, date) ? "done" : "miss";
-  return planForDate(date).title.includes("恢复") ? "rest" : "";
+  return planForDate(date).restDay ? "rest" : "";
 }
 
 function renderDayDetail(date) {
@@ -229,7 +355,7 @@ function renderDayDetail(date) {
     const def = defs[id];
     const mod = record && record.modules ? record.modules[id] : null;
     let meta = "未开始";
-    if (id === "dance" && mod) {
+    if (defs[id].checks && mod) {
       const count = Object.values(mod.checks || {}).filter(Boolean).length;
       meta = count ? `勾选 ${count}/${def.checks.length}` : "未完成";
     } else if (mod) {
@@ -277,7 +403,7 @@ function renderHome() {
   document.querySelectorAll("[data-open]").forEach((el) => el.addEventListener("click", () => openModule(el.dataset.open)));
   document.querySelectorAll("[data-check]").forEach((el) => {
     el.addEventListener("change", () => {
-      const mod = ensure("dance");
+      const mod = ensure(el.dataset.module);
       mod.checks[el.dataset.check] = el.checked;
       save();
       renderHome();
@@ -323,11 +449,11 @@ function clearTodayData() {
 function renderModule(id) {
   const def = defs[id];
   const mod = ensure(id);
-  if (id === "dance") {
+  if (def.checks) {
     return `<section class="module">
       <div class="module-top"><div class="module-title">${def.title}</div><div class="module-time">${def.time}</div></div>
       <div class="module-note">${def.note}</div>
-      ${def.checks.map((text, index) => `<label class="check"><span>${text}</span><input type="checkbox" data-check="${index}" ${mod.checks[index] ? "checked" : ""}></label>`).join("")}
+      ${def.checks.map((text, index) => `<label class="check"><span>${text}</span><input type="checkbox" data-module="${id}" data-check="${index}" ${mod.checks[index] ? "checked" : ""}></label>`).join("")}
     </section>`;
   }
   return `<section class="module" data-open="${id}">
