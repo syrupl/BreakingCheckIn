@@ -824,7 +824,7 @@ $("#card").addEventListener("click", () => {
 });
 $("#restMore").addEventListener("click", (event) => {
   event.stopPropagation();
-  const mod = ensure("core");
+  const mod = ensure(state.current);
   mod.remaining += 10;
   $("#clock").textContent = fmt(mod.remaining);
   save();
