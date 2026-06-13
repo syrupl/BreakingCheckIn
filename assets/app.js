@@ -1,6 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 
-const APP_VERSION = 5;
+const APP_VERSION = 6;
 const todayKey = new Date().toISOString().slice(0, 10);
 const SETTINGS_KEY = "breaking-app-settings";
 
@@ -290,14 +290,23 @@ function buildSetSteps(base) {
 }
 
 function buildCoreSteps() {
-  const picked = corePools.map((pool) => pool[Math.floor(Math.random() * pool.length)]);
   const out = [];
   for (let round = 1; round <= 4; round += 1) {
+    const picked = shuffle(corePools.map((pool) => pool[Math.floor(Math.random() * pool.length)]));
     picked.forEach(([name, cue], index) => {
       out.push({ name, cue, sec: 40, kind: "time", dose: `第 ${round} 组 · ${index + 1}/6`, result: null, elapsed: 0 });
     });
   }
   return out;
+}
+
+function shuffle(items) {
+  const copy = [...items];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+  return copy;
 }
 
 function ensure(id) {
@@ -597,12 +606,13 @@ function stopTimer() {
 
 function startRest(extra = 0) {
   const mod = ensure(state.current);
+  const nextStep = mod.steps[mod.index + 1];
   resetCard();
   mod.phase = "rest";
   mod.remaining = effectiveSeconds(20, "rest") + extra;
   $("#train").classList.add("resting");
   $("#stepLabel").textContent = "短暂休息";
-  $("#stepName").textContent = "调整呼吸";
+  $("#stepName").textContent = nextStep ? `下一个：${nextStep.name}` : "调整呼吸";
   $("#clock").textContent = fmt(mod.remaining);
   $("#stateText").textContent = "休息中";
   $("#card").classList.add("rest-card");
