@@ -6,6 +6,7 @@ const SETTINGS_KEY = "breaking-app-settings";
 
 const appSettings = {
   mode: "formal",
+  inspectDate: todayKey,
   ...loadSettings()
 };
 
@@ -276,7 +277,7 @@ function planForDate(date) {
 }
 
 function plan() {
-  return planForDate(todayKey);
+  return planForDate(appSettings.mode === "test" ? appSettings.inspectDate : todayKey);
 }
 
 function buildSetSteps(base) {
@@ -380,14 +381,23 @@ function renderCalendar() {
   }
   $("#calendarGrid").innerHTML = blanks.concat(cells).join("");
   document.querySelectorAll("[data-date]").forEach((el) => {
-    el.addEventListener("click", () => renderDayDetail(el.dataset.date));
+    el.addEventListener("click", () => {
+      renderDayDetail(el.dataset.date);
+      if (appSettings.mode === "test") {
+        appSettings.inspectDate = el.dataset.date;
+        saveSettings();
+        renderHome();
+        $("#calendar").classList.remove("show");
+      }
+    });
   });
-  renderDayDetail(todayKey);
+  renderDayDetail(appSettings.mode === "test" ? appSettings.inspectDate : todayKey);
 }
 
 function renderHome() {
+  const activeDate = appSettings.mode === "test" ? appSettings.inspectDate : todayKey;
   const todayPlan = plan();
-  $("#dateLine").textContent = todayKey;
+  $("#dateLine").textContent = activeDate;
   $("#dayTitle").textContent = todayPlan.title;
   $("#notes").value = state.notes || "";
   const done = todayPlan.modules.filter(moduleComplete).length;
@@ -419,8 +429,10 @@ function renderSettings() {
 
 function setMode(mode) {
   appSettings.mode = mode;
+  if (mode !== "test") appSettings.inspectDate = todayKey;
   saveSettings();
   renderSettings();
+  renderHome();
   if (state.current) showStep();
 }
 
